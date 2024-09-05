@@ -1,5 +1,5 @@
 # diff_machine
-Calculates difference equations.  It can handle both additive and multiplicative equations.
+Calculates difference equations based solely on initial conditions or a mix of some initial conditions and partial closed form equation of x.  It can handle both additive and multiplicative equations.  The difference equation or the closed form equation does not need to be supplied.  
 
 This can handle only differential equations that converges after rounds of differentiations or divisions with the previous value.  This cannot solve difference equations like Fibonacci like y(x) = y(x-1)+y(x-2) which does not seem to converge after rounds of subtractions or divisions with the previous value.
 
