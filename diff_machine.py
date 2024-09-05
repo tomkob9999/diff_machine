@@ -2,11 +2,12 @@
 # diff_machine
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
-# Version: 1.0.1
+# Version: 1.0.2
 # Author: Tomio Kobayashi
-# Last Update: 2024/9/3
+# Last Update: 2024/9/5
 
 import numpy as np
+import math
 
 class diff_machine:
     def __init__(self):
@@ -40,6 +41,11 @@ class diff_machine:
     # pure - contains only constants and differences in the calculations
     # mix - contains both difference fields and value of x in the calculation
     
+    # TIPS:
+    #     For y=b^x*a
+    #       y(0)->a
+    #       y(1)/y(0)->b
+    # order=[1], init={a, b/a}
     def solve_pure_array(target, init, order_exp=[]):
         order = len(init)-1
         ar = np.zeros(target+1)
@@ -74,13 +80,16 @@ class diff_machine:
         order = len(init)-1
         ar = np.zeros(target+1)
         dd = diff_machine()
+        print("order", order)
+        fact1 = math.factorial(order+2)
+        fact2 = math.factorial(order+1)
         for k, v in init.items():
             ar[k] = v
         for i in range(order+1, target+1, 1):
             order_cum = 0
             for ii in range(order, 0, -1):
                 order_cum += dd.get_diff(ar, i, ii)
-            ar[i] = ar[i-1] + order_cum + (np.sum([diff_coefs[m] * (i*unit-unit) ** (m-1) if m != 0 else 0 for m in range(len(diff_coefs))]))*unit**(len(coefs)-1)
+            ar[i] = ar[i-1] + order_cum + coefs[0]*(i-1)*fact1 + (coefs[1]-(order**2-order))*fact2
         return ar
 
     
@@ -95,11 +104,18 @@ class diff_machine:
 # y'' = Y'(x)-y'(x-1) 
 # y''' = Y''(x)-y''(x-1) 
 # ...
+# How to set initial values for pure form
+# for i=0 to (order-1), y(i) = original_funct()
+#
+# How to set initial values for mix form
+# for i=0 to (order-3), y(i) = original_funct()
+# How to set coef values for mix form - internally factorials are used to derive coefficients of derivatives
+# for i=order to order-1, y(i) = coef in the original polynomial
 #
 # Closed form: y=3*x^2+7*x+11 (1 step=1)
 # Difference equation: y'=y''+y''', y(0)=11, y(1)=21, y(2)=34
-res = diff_machine.solve_pure(4, {0:11, 1:21, 2:34})
-print("res", res)
+# res = diff_machine.solve_pure(4, {0:11, 1:21, 2:34})
+# print("res", res)
 # Same as above except step=0.01
 # # res = diff_machine.solve_pure(21, {0:0.011, 1:0.021, 2:0.034})
 #
@@ -108,19 +124,19 @@ print("res", res)
 # res = diff_machine.solve_pure(9, {0:0, 1:1, 2:4})
 # ar = diff_machine.solve_pure_array(4, {0:0, 1:1, 2:4})
 #
-# Closed form: y=x^3 (1 step=1)
-# Difference equation: y'=y''+y'''+y'''', y(0)=1, y(1)=1, y(2)=8
-# # res = diff_machine.solve_pure(5, {0:0, 1:1, 2:8, 3:27})
-# print("res", res)
-#
 # Closed form: y=4x^3+3x^2
-# Difference Equation: y''=4*6*(x-dx)+6
-# diff_machine.solve_mix_array(10, {0:0, 1:7}, [0, 3, 4], unit=1)
-# res = diff_machine.solve_mix_array(11, {0:0, 1:0.034}, [0, 3, 4], unit=0.1)
-# print("res", res)
-#
-# res = diff_machine.solve_mix(11, {0:0, 1:0.034}, [0, 3, 4], unit=0.1)
-# print("res", res)
+# Mix Difference Equation: y''=4*6*(x-dx)+6
+res = diff_machine.solve_pure_array(4, {0:0, 1:7, 2:44, 3:135})
+print("res", res)
+# res = diff_machine.solve_mix_array(10, {0:0, 1:7}, [0, 3, 4], unit=1)
+res = diff_machine.solve_mix_array(4, {0:0, 1:7}, [4, 3], unit=1)
+print("res", res)
+
+# Closed form: y=x^4+3x^3
+res = diff_machine.solve_pure_array(5, {0:0, 1:4, 2:40, 3:162, 4:448})
+print("res", res)
+res = diff_machine.solve_mix_array(5, {0:0, 1:4, 2:40}, [1, 3], unit=1)
+print("res", res)
 
 # Closed form: y=2^x (1 step=1)
 # Difference equation: y(x)=y(x-1)**2/y(x-2), y(0)=1, y(1)=2
