@@ -3,13 +3,14 @@
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
 #
-# Version: 1.0.8
+# Version: 1.0.9
 # Author: Tomio Kobayashi
 # Last Update: 2024/9/9
 
 import numpy as np
 import math
 
+# Virtual Array that keeps only a fixed number of array from the highest
 class varr:
     def __init__(self, size):
         self.size = size
@@ -33,8 +34,6 @@ class varr:
 class diff_machine:
     def __init__(self):
         self.memo = {}
-        self.memo_found = 0
-#         self.num_get_diff = 0
         
     def clean_memo(self):
         self.memo = {}
@@ -42,43 +41,34 @@ class diff_machine:
     def calc(x1, x2, exp=False):
         return x1-x2 if not exp else x1/x2
 
-#     def get_diff(self, ar, i, order, order_exp=[], enable_memo=True):
-# #         self.num_get_diff += 1
-#         if enable_memo and (i, order) in self.memo:
-#             self.memo_found += 1
-#             return self.memo[(i, order)]
-#         elif order == 1:
-#             return diff_machine.calc(ar[i-1], ar[i-2], order in order_exp)
-#         else:
-#             ret = diff_machine.calc(self.get_diff(ar, i, order-1, order_exp, enable_memo), self.get_diff(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
-#             self.memo[(i, order)] = ret
-#             return ret
-
     def get_diff(self, ar, i, order, order_exp=[], enable_memo=True):
-        if enable_memo and (i, order) in self.memo:
+        if enable_memo and i in self.memo and order in self.memo[i]:
             pass
         elif order == 1:
-            self.memo[(i, order)] =  diff_machine.calc(ar[i-1], ar[i-2], order in order_exp)
+            if i not in self.memo:
+                self.memo[i] = {}
+            self.memo[i][order] =  diff_machine.calc(ar[i-1], ar[i-2], order in order_exp)
         else:
-            self.memo[(i, order)] = diff_machine.calc(self.get_diff(ar, i, order-1, order_exp, enable_memo), self.get_diff(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
-        return self.memo[(i, order)]
+            if i not in self.memo:
+                self.memo[i] = {}
+            self.memo[i][order] = diff_machine.calc(self.get_diff(ar, i, order-1, order_exp, enable_memo), self.get_diff(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
+        return self.memo[i][order]
 
     def get_diff2(self, ar, i, order, order_exp=[], enable_memo=True):
-        if enable_memo and (i, order) in self.memo:
+        if enable_memo and i in self.memo and order in self.memo[i]:
             pass
         elif order == 1:
-            self.memo[(i, order)] = diff_machine.calc(ar.get(i-1), ar.get(i-2), order in order_exp)
+            if i not in self.memo:
+                self.memo[i] = {}
+            self.memo[i][order] = diff_machine.calc(ar.get(i-1), ar.get(i-2), order in order_exp)
         else:
-            self.memo[(i, order)] = diff_machine.calc(self.get_diff2(ar, i, order-1, order_exp, enable_memo), self.get_diff2(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
-        return self.memo[(i, order)]
-
-    def diff_coef(n, order):
-        if order==0:
-            return n
-        return diff_machine.diff_coef(n * order, order-1)
+            if i not in self.memo:
+                self.memo[i] = {}
+            self.memo[i][order] = diff_machine.calc(self.get_diff2(ar, i, order-1, order_exp, enable_memo), self.get_diff2(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
+        return self.memo[i][order]
 
     # Returns array
-    # pure - contains only constants and differences in the calculations
+    # contains only constants and differences in the calculations
     
     # TIPS:
     #     For y=b^x*a
@@ -104,6 +94,8 @@ class diff_machine:
                 ar[i] = ar[i-1] * order_cum
             else:
                 ar[i] = ar[i-1] + order_cum
+            if i - ((order+2)*3) in dd.memo:
+                del dd.memo[i - ((order+2)*3)]
         return ar
     
     
@@ -147,7 +139,7 @@ class diff_machine:
         va = varr((order+2)*2)
         for k, v in init.items():
             va.set(k, v)
-            
+        z = 0
         for i in range(order+1, target+1, 1):
             order_cum = 0
             for ii in range(order, 0, -1):
@@ -159,9 +151,11 @@ class diff_machine:
                     order_cum += dd.get_diff2(va, i, ii, order_exp)
             if 1 in order_exp:
                 va.set(i, va.get(i-1) * order_cum)
-                
             else:
                 va.set(i, va.get(i-1) + order_cum)
+            if i - ((order+2)*3) in dd.memo:
+                del dd.memo[i - ((order+2)*3)]
+        print("len", len(dd.memo))
         return va.ar[-1]
 
 # Notations throughout
