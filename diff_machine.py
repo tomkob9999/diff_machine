@@ -10,13 +10,12 @@
 import numpy as np
 import math
 
+    
 class diff_machine:
     def __init__(self):
         self.memo = {}
         self.memo_found = 0
 #         self.num_get_diff = 0
-        self.fix_term = 0
-        self.order = 0
         
     def clean_memo(self):
         self.memo = {}
@@ -24,36 +23,19 @@ class diff_machine:
     def calc(x1, x2, exp=False):
         return x1-x2 if not exp else x1/x2
 
-# deprecating  this does not use fixed_term, but the performance is almost the same
-#     def get_diff(self, ar, i, order, order_exp=[], enable_memo=True):
-# #         self.num_get_diff += 1
-#         if enable_memo and (i, order) in self.memo:
-#             self.memo_found += 1
-#             return self.memo[(i, order)]
-#         elif order == 1:
-#             return diff_machine.calc(ar[i-1], ar[i-2], order in order_exp)
-#         else:
-#             ret = diff_machine.calc(self.get_diff(ar, i, order-1, order_exp, enable_memo), self.get_diff(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
-#             self.memo[(i, order)] = ret
-#             return ret
-        
     def get_diff(self, ar, i, order, order_exp=[], enable_memo=True):
 #         self.num_get_diff += 1
         if enable_memo and (i, order) in self.memo:
             self.memo_found += 1
             return self.memo[(i, order)]
-        elif order == self.order and self.fix_term != 0:
-            return self.fix_term
         elif order == 1:
             return diff_machine.calc(ar[i-1], ar[i-2], order in order_exp)
         else:
             ret = diff_machine.calc(self.get_diff(ar, i, order-1, order_exp, enable_memo), self.get_diff(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
             self.memo[(i, order)] = ret
-            if self.order == order and self.fix_term == 0:
-                self.fix_term = ret
-                print("fix_term", self.fix_term)
             return ret
-
+    
+        
     def diff_coef(n, order):
         if order==0:
             return n
@@ -71,7 +53,6 @@ class diff_machine:
         order = len(init)-1
         ar = np.zeros(target+1)
         dd = diff_machine()
-        dd.order = order
         for k, v in init.items():
             ar[k] = v
         for i in range(order+1, target+1, 1):
@@ -88,13 +69,8 @@ class diff_machine:
                 ar[i] = ar[i-1] * order_cum
             else:
                 ar[i] = ar[i-1] + order_cum
-#         print("dd.fix_term", dd.fix_term)
-#         print("len(ar)", len(ar))
         return ar
     
-#     # Returns value
-#     def solve(target, init, order_exp=[]):
-#         return diff_machine.solve_array(target, init, order_exp)[-1]
     
     # Returns value
     def solve(target, init, order_exp=[]):
@@ -143,11 +119,13 @@ class diff_machine:
 # Difference equation: y'=y''+y''', y(0)=11, y(1)=21, y(2)=34
 # res = diff_machine.solve(4, {0:11, 1:21, 2:34})
 # print("res", res)
-# res = diff_machine.solve_array(4, {0:11, 1:21, 2:34})
+res = diff_machine.solve_array(4, {0:11, 1:21, 2:34})
+print("res", res)
+# res = diff_machine.solve_array2(4, {0:11, 1:21, 2:34})
 # print("res", res)
 # # Same as above except step=0.01
-# res = diff_machine.solve(10000, {0:0.011, 1:0.021, 2:0.034})
-# print("res", res)
+res = diff_machine.solve(10000, {0:0.011, 1:0.021, 2:0.034})
+print("res", res)
 # #
 # # Closed form: y=x^2 (1 step=1)
 # # Difference equation: y'=y''+y''', y(0)=1, y(1)=1, y(2)=4
@@ -161,13 +139,13 @@ class diff_machine:
 # print("res", res)
 
 # # Closed form: y=5x^5+4x^4+3x^3+2x^2+1
-import time
-start_time = time.time()
-res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
-# res = diff_machine.solve(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
-# print("res", res)
-air_time = time.time() - start_time
-print(f"Execution Time: {air_time:.6f} seconds")
+# import time
+# start_time = time.time()
+# res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+# # res = diff_machine.solve(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+# # print("res", res)
+# air_time = time.time() - start_time
+# print(f"Execution Time: {air_time:.6f} seconds")
 
 # # Closed form: y=2^x (1 step=1)
 # # Difference equation: y(x)=y(x-1)**2/y(x-2), y(0)=1, y(1)=2
