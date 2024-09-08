@@ -3,7 +3,7 @@
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
 #
-# Version: 1.0.7
+# Version: 1.0.8
 # Author: Tomio Kobayashi
 # Last Update: 2024/9/9
 
@@ -19,10 +19,13 @@ class varr:
         return self.ar[self.size - (self.max - i) - 1]
     def set(self, i, y):
         if i > self.max:
-            for ii in range(self.size-1):
-                self.ar[ii] = self.ar[ii+1]
-            self.ar[self.size-1] = y
-            self.max += 1
+            if i == self.max+1:
+                for ii in range(self.size-1):
+                    self.ar[ii] = self.ar[ii+1]
+                self.ar[self.size-1] = y
+                self.max += 1
+            else:
+                raise Exception("Tried to increment by more than 1!")
         else:
             self.ar[self.size - (self.max - i) - 1] = y
             
@@ -139,12 +142,10 @@ class diff_machine:
 
     def solve(target, init, order_exp=[]):
         order = len(init)-1
-        ar = np.zeros(target+1)
         dd = diff_machine()
         dd.order = order
         va = varr((order+2)*2)
         for k, v in init.items():
-            ar[k] = v
             va.set(k, v)
             
         for i in range(order+1, target+1, 1):
