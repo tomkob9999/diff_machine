@@ -3,7 +3,7 @@
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
 #
-# Version: 1.1.0
+# Version: 1.1.1
 # Author: Tomio Kobayashi
 # Last Update: 2024/9/9
 
@@ -63,6 +63,7 @@ class diff_machine:
                 self.memo[i][order] = diff_machine.calc(self.get_diff(ar, i, order-1, order_exp, enable_memo), self.get_diff(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
             if print_force and self.order == order and order+2 == i:
                 print("force", self.memo[i][order])
+                
         return self.memo[i][order]
 
     def get_diff2(self, ar, i, order, order_exp=[], force=0, print_force=False, enable_memo=True):
@@ -164,14 +165,15 @@ class diff_machine:
 # #
 # # Closed form: y=x^2 (1 step=1)
 # Difference equation: y'=y''+y''', y(0)=1, y(1)=1, y(2)=4
-# ar = diff_machine.solve_array(50, {0:0, 1:1, 2:4})
-# print("ar", ar)
-# ar = diff_machine.solve_array(50, {0:0, 1:1, 2:4}, force=2.0)
-# print("ar", ar)
-# ar = diff_machine.solve(50, {0:0, 1:1, 2:4})
-# print("ar", ar)
-# ar = diff_machine.solve(50, {0:0, 1:1, 2:4}, force=2.0)
-# print("ar", ar)
+ar = diff_machine.solve_array(50, {0:0, 1:1, 2:4})
+print("ar", ar)
+ar = diff_machine.solve_array(50, {0:-100, 1:1, 2:4}, force=2.0)
+print("ar", ar)
+ar = diff_machine.solve(50, {0:0, 1:1, 2:4})
+print("ar", ar)
+ar = diff_machine.solve(50, {0:-1, 1:1, 2:4}, force=2.0)
+# ar = diff_machine.solve(50, {1:1, 2:4}, force=2.0)
+print("ar", ar)
 # #
 # # Closed form: y=4x^3+3x^2
 # res = diff_machine.solve_array(4, {0:0, 1:7, 2:44, 3:135})
@@ -182,24 +184,24 @@ class diff_machine:
 # # Closed form: y=5x^5+4x^4+3x^3+2x^2+1
 import time
 start_time = time.time()
-res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+res = diff_machine.solve_array(1000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
 air_time = time.time() - start_time
 print("res", res[-1])
 print(f"Execution Time: {air_time:.6f} seconds")
 start_time = time.time()
-res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125}, force=0.006)
+res = diff_machine.solve_array(1000, {0:-100, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125}, force=0.006)
 # res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
 print("res", res[-1])
 air_time = time.time() - start_time
 print(f"Execution Time: {air_time:.6f} seconds")
 start_time = time.time()
-res = diff_machine.solve(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+res = diff_machine.solve(1000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
 # res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
 print("res", res)
 air_time = time.time() - start_time
 print(f"Execution Time: {air_time:.6f} seconds")
 start_time = time.time()
-res = diff_machine.solve(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125}, force=0.006)
+res = diff_machine.solve(1000, {0:-100, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125}, force=0.006)
 # res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
 print("res", res)
 air_time = time.time() - start_time
