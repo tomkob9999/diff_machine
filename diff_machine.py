@@ -3,40 +3,41 @@
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
 #
-# Version: 1.1.2
+# Version: 1.1.3
 # Author: Tomio Kobayashi
 # Last Update: 2024/9/9
 
 import numpy as np
 import math
 
-# Virtual Array that keeps only a fixed number of array from the highest
-class varr:
-    def __init__(self, size):
-        self.size = size
-        self.ar = [0]*size
-        self.max = size-1
-        self.curr = 0
-    def get(self, i):
-        return self.ar[self.size - (self.max - i) - 1]
-    def get_curr(self):
-        return self.ar[min(self.curr, self.size-1)]
-    def set(self, i, y):
-        if i > self.curr:
-            self.curr = i
-        if i > self.max:
-            if i == self.max+1:
-                for ii in range(self.size-1):
-                    self.ar[ii] = self.ar[ii+1]
-                self.ar[self.size-1] = y
-                self.max += 1
-            else:
-                raise Exception("Tried to increment by more than 1!")
-        else:
-            self.ar[self.size - (self.max - i) - 1] = y
-            
-    
 class diff_machine:
+
+    # Virtual Array that keeps only a fixed number of array from the highest
+    class varr:
+        def __init__(self, size):
+            self.size = size
+            self.ar = [0]*size
+            self.max = size-1
+            self.curr = 0
+        def get(self, i):
+            return self.ar[self.size - (self.max - i) - 1]
+        def get_curr(self):
+            return self.ar[min(self.curr, self.size-1)]
+        def set(self, i, y):
+            if i > self.curr:
+                self.curr = i
+            if i > self.max:
+                if i == self.max+1:
+                    for ii in range(self.size-1):
+                        self.ar[ii] = self.ar[ii+1]
+                    self.ar[self.size-1] = y
+                    self.max += 1
+                else:
+                    raise Exception("Tried to increment by more than 1!")
+            else:
+                self.ar[self.size - (self.max - i) - 1] = y
+    
+    
     def __init__(self, order):
         self.memo = {}
         self.order = order
@@ -122,7 +123,7 @@ class diff_machine:
     def solve(target, init, order_exp=[], force=0, print_force=False):
         order = len(init)-1
         dd = diff_machine(order)
-        va = varr((order+2)*2)
+        va = diff_machine.varr((order+2)*2)
 #         for k, v in init.items():
         for k, v in enumerate(init):
             va.set(k, v)
