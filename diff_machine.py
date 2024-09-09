@@ -3,7 +3,7 @@
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
 #
-# Version: 1.0.9
+# Version: 1.1.0
 # Author: Tomio Kobayashi
 # Last Update: 2024/9/9
 
@@ -16,9 +16,14 @@ class varr:
         self.size = size
         self.ar = [0]*size
         self.max = size-1
+        self.curr = 0
     def get(self, i):
         return self.ar[self.size - (self.max - i) - 1]
+    def get_curr(self):
+        return self.ar[min(self.curr, self.size-1)]
     def set(self, i, y):
+        if i > self.curr:
+            self.curr = i
         if i > self.max:
             if i == self.max+1:
                 for ii in range(self.size-1):
@@ -32,8 +37,9 @@ class varr:
             
     
 class diff_machine:
-    def __init__(self):
+    def __init__(self, order):
         self.memo = {}
+        self.order = order
         
     def clean_memo(self):
         self.memo = {}
@@ -41,7 +47,7 @@ class diff_machine:
     def calc(x1, x2, exp=False):
         return x1-x2 if not exp else x1/x2
 
-    def get_diff(self, ar, i, order, order_exp=[], enable_memo=True):
+    def get_diff(self, ar, i, order, order_exp=[], force=0, print_force=False, enable_memo=True):
         if enable_memo and i in self.memo and order in self.memo[i]:
             pass
         elif order == 1:
@@ -51,10 +57,15 @@ class diff_machine:
         else:
             if i not in self.memo:
                 self.memo[i] = {}
-            self.memo[i][order] = diff_machine.calc(self.get_diff(ar, i, order-1, order_exp, enable_memo), self.get_diff(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
+            if force > 0 and self.order == order:
+                self.memo[i][order] = force
+            else:
+                self.memo[i][order] = diff_machine.calc(self.get_diff(ar, i, order-1, order_exp, enable_memo), self.get_diff(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
+            if print_force and self.order == order and order+2 == i:
+                print("force", self.memo[i][order])
         return self.memo[i][order]
 
-    def get_diff2(self, ar, i, order, order_exp=[], enable_memo=True):
+    def get_diff2(self, ar, i, order, order_exp=[], force=0, print_force=False, enable_memo=True):
         if enable_memo and i in self.memo and order in self.memo[i]:
             pass
         elif order == 1:
@@ -64,7 +75,12 @@ class diff_machine:
         else:
             if i not in self.memo:
                 self.memo[i] = {}
-            self.memo[i][order] = diff_machine.calc(self.get_diff2(ar, i, order-1, order_exp, enable_memo), self.get_diff2(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
+            if force > 0 and self.order == order:
+                self.memo[i][order] = force
+            else:
+                self.memo[i][order] = diff_machine.calc(self.get_diff2(ar, i, order-1, order_exp, enable_memo), self.get_diff2(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
+            if print_force and self.order == order and order+2 == i:
+                print("force", self.memo[i][order])
         return self.memo[i][order]
 
     # Returns array
@@ -75,10 +91,10 @@ class diff_machine:
     #       y(0)->a
     #       y(1)/y(0)->b
     # order=[1], init={a, b/a}
-    def solve_array(target, init, order_exp=[]):
+    def solve_array(target, init, order_exp=[], force=0, print_force=False):
         order = len(init)-1
         ar = np.zeros(target+1)
-        dd = diff_machine()
+        dd = diff_machine(order)
         for k, v in init.items():
             ar[k] = v
         for i in range(order+1, target+1, 1):
@@ -87,9 +103,9 @@ class diff_machine:
                 if ii+1 in order_exp:
                     if order_cum == 0:
                         order_cum = 1
-                    order_cum *= dd.get_diff(ar, i, ii, order_exp)
+                    order_cum *= dd.get_diff(ar, i, ii, order_exp, force, print_force)
                 else:
-                    order_cum += dd.get_diff(ar, i, ii, order_exp)
+                    order_cum += dd.get_diff(ar, i, ii, order_exp, force, print_force)
             if 1 in order_exp:
                 ar[i] = ar[i-1] * order_cum
             else:
@@ -99,43 +115,10 @@ class diff_machine:
         return ar
     
     
-#     # Returns value
-#     def solve(target, init, order_exp=[]):
-#         order = len(init)-1
-#         ar = np.zeros(order+2)
-#         dd = diff_machine()
-#         dd.order = order
-#         for k, v in init.items():
-#             ar[k] = v
-#         for i in range(order+1, target+1, 1):
-#             order_cum = 0
-#             for ii in range(order, 0, -1):
-# #                 order_cum += dd.get_diff(ar, order+1, ii)
-#                 if ii+1 in order_exp:
-#                     if order_cum == 0:
-#                         order_cum = 1
-#                     order_cum *= dd.get_diff(ar, order+1, ii, order_exp)
-#                 else:
-#                     order_cum += dd.get_diff(ar, order+1, ii, order_exp)
 
-#             dd.clean_memo()
-# #             ar[order+1] = ar[order] + order_cum
-#             if 1 in order_exp:
-# #                 ar[i] = ar[i-1] * order_cum
-#                 ar[order+1] = ar[order] * order_cum
-#             else:
-# #                 ar[i] = ar[i-1] + order_cum
-#                 ar[order+1] = ar[order] + order_cum
-                
-#             for ii in range(order+1):
-#                 ar[ii] = ar[ii+1]
-# #         print("len(ar)", len(ar))
-#         return ar[order+1]
-
-    def solve(target, init, order_exp=[]):
+    def solve(target, init, order_exp=[], force=0, print_force=False):
         order = len(init)-1
-        dd = diff_machine()
-        dd.order = order
+        dd = diff_machine(order)
         va = varr((order+2)*2)
         for k, v in init.items():
             va.set(k, v)
@@ -146,17 +129,16 @@ class diff_machine:
                 if ii+1 in order_exp:
                     if order_cum == 0:
                         order_cum = 1
-                    order_cum *= dd.get_diff2(va, i, ii, order_exp)
+                    order_cum *= dd.get_diff2(va, i, ii, order_exp, force, print_force)
                 else:
-                    order_cum += dd.get_diff2(va, i, ii, order_exp)
+                    order_cum += dd.get_diff2(va, i, ii, order_exp, force, print_force)
             if 1 in order_exp:
                 va.set(i, va.get(i-1) * order_cum)
             else:
                 va.set(i, va.get(i-1) + order_cum)
             if i - ((order+2)*3) in dd.memo:
                 del dd.memo[i - ((order+2)*3)]
-        print("len", len(dd.memo))
-        return va.ar[-1]
+        return va.get_curr()
 
 # Notations throughout
 #
@@ -181,8 +163,14 @@ class diff_machine:
 # print("res", res)
 # #
 # # Closed form: y=x^2 (1 step=1)
-# # Difference equation: y'=y''+y''', y(0)=1, y(1)=1, y(2)=4
-# ar = diff_machine.solve_array(20, {0:0, 1:1, 2:4})
+# Difference equation: y'=y''+y''', y(0)=1, y(1)=1, y(2)=4
+# ar = diff_machine.solve_array(50, {0:0, 1:1, 2:4})
+# print("ar", ar)
+# ar = diff_machine.solve_array(50, {0:0, 1:1, 2:4}, force=2.0)
+# print("ar", ar)
+# ar = diff_machine.solve(50, {0:0, 1:1, 2:4})
+# print("ar", ar)
+# ar = diff_machine.solve(50, {0:0, 1:1, 2:4}, force=2.0)
 # print("ar", ar)
 # #
 # # Closed form: y=4x^3+3x^2
@@ -195,11 +183,24 @@ class diff_machine:
 import time
 start_time = time.time()
 res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+air_time = time.time() - start_time
+print("res", res[-1])
+print(f"Execution Time: {air_time:.6f} seconds")
+start_time = time.time()
+res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125}, force=0.006)
+# res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
 print("res", res[-1])
 air_time = time.time() - start_time
 print(f"Execution Time: {air_time:.6f} seconds")
 start_time = time.time()
 res = diff_machine.solve(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+# res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+print("res", res)
+air_time = time.time() - start_time
+print(f"Execution Time: {air_time:.6f} seconds")
+start_time = time.time()
+res = diff_machine.solve(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125}, force=0.006)
+# res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
 print("res", res)
 air_time = time.time() - start_time
 print(f"Execution Time: {air_time:.6f} seconds")
