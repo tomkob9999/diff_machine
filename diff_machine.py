@@ -3,7 +3,7 @@
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
 #
-# Version: 1.1.1
+# Version: 1.1.2
 # Author: Tomio Kobayashi
 # Last Update: 2024/9/9
 
@@ -82,6 +82,7 @@ class diff_machine:
                 self.memo[i][order] = diff_machine.calc(self.get_diff2(ar, i, order-1, order_exp, enable_memo), self.get_diff2(ar, i-1, order-1, order_exp, enable_memo), order in order_exp)
             if print_force and self.order == order and order+2 == i:
                 print("force", self.memo[i][order])
+                
         return self.memo[i][order]
 
     # Returns array
@@ -96,7 +97,8 @@ class diff_machine:
         order = len(init)-1
         ar = np.zeros(target+1)
         dd = diff_machine(order)
-        for k, v in init.items():
+#         for k, v in init.items():
+        for k, v in enumerate(init):
             ar[k] = v
         for i in range(order+1, target+1, 1):
             order_cum = 0
@@ -121,7 +123,8 @@ class diff_machine:
         order = len(init)-1
         dd = diff_machine(order)
         va = varr((order+2)*2)
-        for k, v in init.items():
+#         for k, v in init.items():
+        for k, v in enumerate(init):
             va.set(k, v)
         z = 0
         for i in range(order+1, target+1, 1):
@@ -153,77 +156,79 @@ class diff_machine:
 #
 # Closed form: y=3*x^2+7*x+11 (1 step=1)
 # Difference equation: y'=y''+y''', y(0)=11, y(1)=21, y(2)=34
-# res = diff_machine.solve(4, {0:11, 1:21, 2:34})
+# res = diff_machine.solve(4, {[11, 21, 34])
 # print("res", res)
-# res = diff_machine.solve_array(4, {0:11, 1:21, 2:34})
+# res = diff_machine.solve_array(4, [11, 21, 34])
 # print("res", res)
-# res = diff_machine.solve_array2(4, {0:11, 1:21, 2:34})
+# res = diff_machine.solve_array2(4, [11, 21, 34])
 # print("res", res)
 # # Same as above except step=0.01
-# res = diff_machine.solve(10000, {0:0.011, 1:0.021, 2:0.034})
+# res = diff_machine.solve(10000, [0.011, 0.021, 0.034])
 # print("res", res)
 # #
 # # Closed form: y=x^2 (1 step=1)
 # Difference equation: y'=y''+y''', y(0)=1, y(1)=1, y(2)=4
-ar = diff_machine.solve_array(50, {0:0, 1:1, 2:4})
+# ar = diff_machine.solve_array(50, [0, 1, 4])
+# print("ar", ar)
+# ar = diff_machine.solve_array(50, [-100, 1, 4], force=2.0)
+# print("ar", ar)
+ar = diff_machine.solve(10, [0, 1, 4])
 print("ar", ar)
-ar = diff_machine.solve_array(50, {0:-100, 1:1, 2:4}, force=2.0)
-print("ar", ar)
-ar = diff_machine.solve(50, {0:0, 1:1, 2:4})
-print("ar", ar)
-ar = diff_machine.solve(50, {0:-1, 1:1, 2:4}, force=2.0)
-# ar = diff_machine.solve(50, {1:1, 2:4}, force=2.0)
+# ar = diff_machine.solve(5, [-1, 1, 4], force=2.0)
+# ar = diff_machine.solve(10, [-1, 1, 4], force=2.2)
+ar = diff_machine.solve(10, [-1, 1, 4], force=2.2)
+# ar = diff_machine.solve(50, [1, 4], force=2.0)
 print("ar", ar)
 # #
 # # Closed form: y=4x^3+3x^2
-# res = diff_machine.solve_array(4, {0:0, 1:7, 2:44, 3:135})
-# # res = diff_machine.solve_array(5, {0:0, 1:0.07, 2:0.44, 3:1.35})
-# # res = diff_machine.solve_array(5, {0:0, 1:0.034, 2:0.152, 3:0.378})
+# res = diff_machine.solve_array(4, [0, 7, 44, 135])
+# # res = diff_machine.solve_array(5, [0, 0.07, 0.44, 1.35])
+# # res = diff_machine.solve_array(5, [0, 0.034, 0.152, 0.378])
 # print("res", res)
 
 # # Closed form: y=5x^5+4x^4+3x^3+2x^2+1
 import time
 start_time = time.time()
-res = diff_machine.solve_array(1000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+res = diff_machine.solve_array(1000, [0, 0.12345, 0.312, 0.60555, 1.0656, 1.78125])
 air_time = time.time() - start_time
 print("res", res[-1])
 print(f"Execution Time: {air_time:.6f} seconds")
 start_time = time.time()
-res = diff_machine.solve_array(1000, {0:-100, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125}, force=0.006)
-# res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+res = diff_machine.solve_array(1000, [-100, 0.12345, 0.312, 0.60555, 1.0656, 1.78125], force=0.006)
+# res = diff_machine.solve_array(10000, [0, 0.12345, 0.312, 0.60555, 1.0656, 1.78125])
 print("res", res[-1])
 air_time = time.time() - start_time
 print(f"Execution Time: {air_time:.6f} seconds")
 start_time = time.time()
-res = diff_machine.solve(1000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
-# res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+res = diff_machine.solve(1000, [0, 0.12345, 0.312, 0.60555, 1.0656, 1.78125])
+# res = diff_machine.solve_array(10000, [0, 0.12345, 0.312, 0.60555, 1.0656, 1.78125])
 print("res", res)
 air_time = time.time() - start_time
 print(f"Execution Time: {air_time:.6f} seconds")
 start_time = time.time()
-res = diff_machine.solve(1000, {0:-100, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125}, force=0.006)
-# res = diff_machine.solve_array(10000, {0:0, 1:0.12345, 2:0.312, 3:0.60555, 4:1.0656, 5:1.78125})
+res = diff_machine.solve(1000, [-100, 0.12345, 0.312, 0.60555, 1.0656, 1.78125], force=0.006)
+# res = diff_machine.solve_array(10000, [0, 0.12345, 0.312, 0.60555, 1.0656, 1.78125])
 print("res", res)
 air_time = time.time() - start_time
 print(f"Execution Time: {air_time:.6f} seconds")
 
 # # Closed form: y=2^x (1 step=1)
 # # Difference equation: y(x)=y(x-1)**2/y(x-2), y(0)=1, y(1)=2
-# ar = diff_machine.solve(40, {0:1, 1:2}, order_exp=[1])
+# ar = diff_machine.solve(40, [1, 2], order_exp=[1])
 # print("ar", ar)
-# ar = diff_machine.solve_array(100, {0:1, 1:1.01}, order_exp=[1])
+# ar = diff_machine.solve_array(100, [1, 1.01], order_exp=[1])
 # print("ar", ar)
-# ar = diff_machine.solve(100, {0:1, 1:1.01}, order_exp=[1])
+# ar = diff_machine.solve(100, [1, 1.01], order_exp=[1])
 # print("ar", ar)
 # #
 # # Closed form: 4*2^(x*3) (1 step=1)
-# ar = diff_machine.solve(10, {0:4, 1:32}, order_exp=[1])
+# ar = diff_machine.solve(10, [4, 32}], order_exp=[1])
 # print("ar", ar)
-# ar = diff_machine.solve_array(10, {0:4, 1:32}, order_exp=[1])
+# ar = diff_machine.solve_array(10, [4, 32], order_exp=[1])
 # print("ar", ar)
 # # 
 # # Closed form: y(x)=2^(x-1)+(x-1)
-# ar = diff_machine.solve_array(10, {0:1, 1:3, 2:6, 3:11}, order_exp=[3])
+# ar = diff_machine.solve_array(10, [1, 3, 6, 11], order_exp=[3])
 # print("ar", ar)
-# ar = diff_machine.solve(10, {0:1, 1:3, 2:6, 3:11}, order_exp=[3])
+# ar = diff_machine.solve(10, [1, 3, 6, 11], order_exp=[3])
 # print("ar", ar)
