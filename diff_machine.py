@@ -3,9 +3,9 @@
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
 #
-# Version: 1.1.5
+# Version: 1.1.6
 # Author: Tomio Kobayashi
-# Last Update: 2024/9/19
+# Last Update: 2024/9/20
 
 import numpy as np
 import math
@@ -68,9 +68,6 @@ class diff_machine:
                 print("force", self.memo[i][order])
         return self.memo[i][order]
 
-        
-
-
     # Returns array
     # contains only constants and differences in the calculations
     
@@ -130,7 +127,6 @@ class diff_machine:
         return va.get_curr()
 
     def binomial_expansion_coefficients(n):
-        
         if n == 0:
             return [1]
         x =[[1], [1, -1]]
@@ -141,9 +137,9 @@ class diff_machine:
             x.append(new_vec + [-1 if (len(x[i]))%2 else 1])
 
         return x[-1]
-
-    bin_coefs = None
-    comb_coefs = None
+    
+    bin_coefs = [[1], [1, -1], [1, -2, 1], [1, -3, 3, -1], [1, -4, 6, -4, 1], [1, -5, 10, -10, 5, -1], [1, -6, 15, -20, 15, -6, 1], [1, -7, 21, -35, 35, -21, 7, -1], [1, -8, 28, -56, 70, -56, 28, -8, 1], [1, -9, 36, -84, 126, -126, 84, -36, 9, -1], [1, -10, 45, -120, 210, -252, 210, -120, 45, -10, 1], [1, -11, 55, -165, 330, -462, 462, -330, 165, -55, 11, -1], [1, -12, 66, -220, 495, -792, 924, -792, 495, -220, 66, -12, 1], [1, -13, 78, -286, 715, -1287, 1716, -1716, 1287, -715, 286, -78, 13, -1]]
+    comb_coefs = [[1], [1], [2, -1], [3, -3, 1], [4, -6, 4, -1], [5, -10, 10, -5, 1], [6, -15, 20, -15, 6, -1], [7, -21, 35, -35, 21, -7, 1], [8, -28, 56, -70, 56, -28, 8, -1], [9, -36, 84, -126, 126, -84, 36, -9, 1], [10, -45, 120, -210, 252, -210, 120, -45, 10, -1], [11, -55, 165, -330, 462, -462, 330, -165, 55, -11, 1], [12, -66, 220, -495, 792, -924, 792, -495, 220, -66, 12, -1], [13, -78, 286, -715, 1287, -1716, 1716, -1287, 715, -286, 78, -13, 1]]
 
     def add_multiple_vectors(vectors):
         max_len = max(len(v) for v in vectors)
@@ -152,22 +148,26 @@ class diff_machine:
 
 
     def combined_binomial_coefficients(n):
-        if not diff_machine.bin_coefs:
-            diff_machine.bin_coefs = [diff_machine.binomial_expansion_coefficients(i) for i in range(14)]
+        # code to use to propagate diff_machine.bin_coefs dynamically
+        #if not diff_machine.bin_coefs:
+            #diff_machine.bin_coefs = [diff_machine.binomial_expansion_coefficients(i) for i in range(14)]
+            #print(diff_machine.bin_coefs)
         vecs = [diff_machine.bin_coefs[i] for i in range(n)]
         return diff_machine.add_multiple_vectors(vecs)
 
-    def solve_array_compact(target, y):
+    def solve_array_compact(target, y, force=0):
         n = len(y)
-        if not diff_machine.comb_coefs:
-            diff_machine.comb_coefs = [[1]] + [diff_machine.combined_binomial_coefficients(i) for i in range(1, 14, 1)]
+        # code to use to propagate diff_machine.comb_coefs dynamically
+        #if not diff_machine.comb_coefs:
+            #diff_machine.comb_coefs = [[1]] + [diff_machine.combined_binomial_coefficients(i) for i in range(1, 14, 1)]
+            #print(diff_machine.comb_coefs)
         for _ in range(target-n+1):
-            yy=sum([y[(len(y)-1-i)]*c for i, c in enumerate(diff_machine.comb_coefs[n])])
+            yy=sum([y[(len(y)-1-i)]*c for i, c in enumerate(diff_machine.comb_coefs[n])])+(force if force else 0)
             y.append(yy)
         return y
     
-    def solve_compact(target, y):
-        return diff_machine.solve_array_compact(target, y)[-1]
+    def solve_compact(target, y, force=0):
+        return diff_machine.solve_array_compact(target, y, force)[-1]
 
 # Notations throughout
 #
@@ -194,13 +194,15 @@ class diff_machine:
 # # Closed form: y=x^2 (1 step=1)
 # Difference equation: y'=y''+y''', y(0)=1, y(1)=1, y(2)=4
 # ar = diff_machine.solve_array(3, [0, 1, 4])
-ar = diff_machine.solve_array(24, [0, 1, 8, 27])
+# ar = diff_machine.solve_array(24, [0, 1, 8, 27])
+# print("ar", ar)
+# ar = diff_machine.solve_array(3, [0, 1, 4])
+# print("ar", ar)
+# ar = diff_machine.solve_array_compact(24, [0, 1, 8, 27])
+# print("ar", ar)
+ar = diff_machine.solve_array_compact(200, [0, 1, 4])
 print("ar", ar)
-ar = diff_machine.solve(3, [0, 1, 4])
-print("ar", ar)
-ar = diff_machine.solve_array_compact(24, [0, 1, 8, 27])
-print("ar", ar)
-ar = diff_machine.solve_compact(3, [0, 1, 4])
+ar = diff_machine.solve_array_compact(200, [0, 1], force=2.1)
 print("ar", ar)
 # ar = diff_machine.solve_array(50, [-100, 1, 4], force=2.0)
 # print("ar", ar)
