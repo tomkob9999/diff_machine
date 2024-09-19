@@ -3,7 +3,7 @@
 #
 # Description: Calculates difference equation based on the order, target row and initial values specified
 #
-# Version: 1.1.4
+# Version: 1.1.5
 # Author: Tomio Kobayashi
 # Last Update: 2024/9/19
 
@@ -118,10 +118,8 @@ class diff_machine:
                     if order_cum == 0:
                         order_cum = 1
                         
-#                     order_cum *= dd.get_diff2(va, i, ii, order_exp, force, print_force)
                     order_cum *= dd.get_diff(va, i, ii, order_exp, force, print_force, from_varr=True)
                 else:
-#                     order_cum += dd.get_diff2(va, i, ii, order_exp, force, print_force)
                     order_cum += dd.get_diff(va, i, ii, order_exp, force, print_force, from_varr=True)
             if 1 in order_exp:
                 va.set(i, va.get(i-1) * order_cum)
@@ -145,6 +143,7 @@ class diff_machine:
         return x[-1]
 
     bin_coefs = None
+    comb_coefs = None
 
     def add_multiple_vectors(vectors):
         max_len = max(len(v) for v in vectors)
@@ -160,9 +159,10 @@ class diff_machine:
 
     def solve_array_compact(target, y):
         n = len(y)
-        combined_coeffs = combined_binomial_coefficients(n)
+        if not diff_machine.comb_coefs:
+            diff_machine.comb_coefs = [[1]] + [diff_machine.combined_binomial_coefficients(i) for i in range(1, 14, 1)]
         for _ in range(target-n+1):
-            yy=sum([y[(len(y)-1-i)]*c for i, c in enumerate(combined_coeffs)])
+            yy=sum([y[(len(y)-1-i)]*c for i, c in enumerate(diff_machine.comb_coefs[n])])
             y.append(yy)
         return y
     
